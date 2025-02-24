@@ -48,6 +48,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const data = await req.json();
     const email = data.email;
     const enrollment = data.enrollmentNo;
+    const studentdetails = data.details;
+    console.log(studentdetails);
 
     if (!id) {
       return NextResponse.json(errorResponse(400, "Id is required"), { status: 400 });
@@ -62,9 +64,34 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json(errorResponse(400, "Enrollment Number cannot be updated"), { status: 400 });
     }
 
+    const student = await prisma.student.findUnique({
+      where: { id: String(id) },
+      select: {studentDetailsId: true}
+    });
+
+    if (!student) {
+      return NextResponse.json(errorResponse(404, "Student not found"), { status: 404 });
+    }
+
+    if (studentdetails)
+    {
+      const detailsupdatedProfile = await prisma.studentDetails.update({
+        where: { id: String(student.studentDetailsId) },
+        data: {
+          ...studentdetails
+        },
+      });
+      if (!detailsupdatedProfile) {
+        return NextResponse.json(errorResponse(404, "Student details not found"), { status: 404 });
+      }
+      delete data.details;
+    }
+
     const updatedProfile = await prisma.student.update({
       where: { id: String(id) },
-      data,
+      data: {
+        ...data
+      },
     });
     const userupdatedProfile = await prisma.user.updateMany({
       where: { userId: String(id) },
@@ -80,6 +107,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json(errorResponse(404, "User profile not found"), { status: 404 });
     }
 
+    return NextResponse.json(successResponse(200, (updatedProfile), "Profile updated successfully"), { status: 200 });
     return NextResponse.json(successResponse(200, updatedProfile, "Profile updated successfully"), { status: 200 });
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
