@@ -35,7 +35,7 @@ export function Topnav() {
     useEffect(() => {
         const getUser = async () => {
             const user = await getClientSession();
-            console.log(user)
+            // console.log(user)
             setUser(user);
         }
         getUser();

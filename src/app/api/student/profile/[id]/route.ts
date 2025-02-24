@@ -4,6 +4,7 @@ import { ApiResponse } from '@/types/apiResponse';
 import { errorResponse, successResponse, failureResponse } from "@/utils/response";
 import { Student } from "@prisma/client";
 
+
 // Function to handle BigInt serialization
 function serializeBigInt<T>(obj: T): T {
   return JSON.parse(
@@ -79,7 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json(errorResponse(404, "User profile not found"), { status: 404 });
     }
 
-    return NextResponse.json(successResponse(200, serializeBigInt(updatedProfile), "Profile updated successfully"), { status: 200 });
+    return NextResponse.json(successResponse(200, updatedProfile, "Profile updated successfully"), { status: 200 });
   } catch (err) {
     const error = err instanceof Error ? err.message : String(err);
     return NextResponse.json(failureResponse(error), { status: 500 });
